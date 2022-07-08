@@ -1,0 +1,278 @@
+<!doctype html>
+<html>
+  <head>
+    <style>
+      .note {
+        width: 150px;
+        height: 150px;
+        margin: 5px;
+        float: left;
+        box-sizing: border-box;
+        padding: 5px;
+        background-color: pink;
+        position: relative;
+      }
+
+      #corkboard {
+        background-image: url('images/corkboard.jpg');
+        min-height: 500px;
+      }
+
+      .tab {
+        display: inline-block;
+        width: 100px;
+        border: 1px solid #ccc;
+        text-align: center;
+        border-radius: 15px 15px 0px 0px;
+        padding: 5px;
+        border-bottom: 0px;
+      }
+
+      .active {
+        background-color: #ccc;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      /*.delButton {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+      }*/
+
+      .completeButton {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+      }
+
+      .delButton {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+      }
+
+    </style>
+  </head>
+  <body>
+
+    <h1>Yearly To-Do List</h1>
+
+    <div id="controls">
+      <div id="winter" class="tab active" data-mypanel="winterpanel">Winter</div>
+      <div id="spring" class="tab" data-mypanel="springpanel">Spring</div>
+      <div id="summer" class="tab" data-mypanel="summerpanel">Summer</div>
+      <div id="fall" class="tab" data-mypanel="fallpanel">Fall</div>
+
+      <select id="filter">
+        <option value="all">All Tasks</option>
+        <option value="winter">Winter</option>
+        <option value="spring">Spring</option>
+        <option value="summer">Summer</option>
+        <option value="fall">Fall</option>
+      </select>
+    </div>
+
+    <div id="panels">
+      <div id="winterpanel" class="panel">
+        What is something you want to accomplish this winter?</br>
+        <input type="text"><button data-mytype="winter" data-mycolor="grey" class="add">Add Note</button>
+        <button data-mytype="winter" data-mycolor="grey" class="delete">Delete All Notes</button>
+      </div>
+      <div id="springpanel" class="panel hidden">
+        What is something you want to accomplish this spring?</br>
+        <input type="text" value=""><button data-mytype="spring" data-mycolor="green" class="add">Add Note</button>
+        <button data-mytype="spring" data-mycolor="green" class="delete">Delete All Notes</button>
+      </div>
+      <div id="summerpanel" class="panel hidden">
+        What is something you want to accomplish this summer?</br>
+        <input type="text"><button data-mytype="summer" data-mycolor="yellow" class="add">Add Note</button>
+        <button data-mytype="summer" data-mycolor="yellow" class="delete">Delete All Notes</button>
+      </div>
+      <div id="fallpanel" class="panel hidden">
+        What is something you want to accomplish this fall?</br>
+        <input type="text"><button data-mytype="fall" data-mycolor="brown" class="add">Add Note</button>
+        <button data-mytype="fall" data-mycolor="brown" class="delete">Delete All Notes</button>
+      </div>
+    </div>
+
+    <div id="corkboard"></div>
+
+    <script>
+
+      // handle the tabs and when the user clicks on them
+      let allTabs = document.querySelectorAll('.tab');
+
+      // visit all tabs
+      for (let i = 0; i < allTabs.length; i++) {
+
+        // have each tab listen for a mouse event
+        allTabs[i].onclick = function(event) {
+          // console.log( event.currentTarget );
+
+          // remove the class of active from the other element that currently has it
+          let currentActive = document.querySelector('.active');
+          currentActive.classList.remove('active');
+          event.currentTarget.classList.add('active');
+
+          // hide every panel on the page
+          let allPanels = document.querySelectorAll('.panel');
+          for (let j = 0; j < allPanels.length; j++) {
+            allPanels[j].classList.add('hidden');
+          }
+
+          // show the correct panel that goes along with this season
+          let myPanel = event.currentTarget.dataset.mypanel;
+          document.getElementById( myPanel ).classList.remove('hidden');
+        }
+
+      }
+
+      // grab a ref to each button on the page
+      let allButtons = document.querySelectorAll('button');
+      for (let i = 0; i < allButtons.length; i++) {
+
+        // have each button listen for mouse events
+        allButtons[i].onclick = function(event) {
+
+          let noteText = event.currentTarget.previousElementSibling.value;
+          if (noteText != '' && event.currentTarget.classList.contains("add")) {
+
+            // grab the type of this note
+            let myType = event.currentTarget.dataset.mytype;
+            // console.log(myType);
+
+            // create a new note
+            let tempNote = document.createElement('div');
+            tempNote.classList.add('note');
+            tempNote.classList.add(myType);
+
+            // give each note their own delete button
+            let deleteButton = document.createElement('img');
+            deleteButton.src = 'images/delete_button.png';
+            deleteButton.classList.add('hidden');
+            deleteButton.classList.add('delButton');
+            tempNote.appendChild(deleteButton);
+
+            // give each note their own completion button
+            let completeButton = document.createElement('img');
+            completeButton.src = 'images/unchecked_button.png';
+            completeButton.classList.add('hidden');
+            completeButton.classList.add('completeButton');
+            tempNote.appendChild(completeButton);
+
+            tempNote.onmouseover = function(event) {
+              // grab a ref to the delete button
+              event.currentTarget.children[0].classList.remove('hidden');
+              event.currentTarget.children[1].classList.remove('hidden');
+            }
+            tempNote.onmouseout = function(event) {
+              // grab a ref to the delete button
+              event.currentTarget.children[0].classList.add('hidden');
+              event.currentTarget.children[1].classList.add('hidden');
+            }
+
+            // listen for when the user clicks on the delete button
+            deleteButton.onclick = function(event) {
+              // console.log(event.currentTarget.parentElement);
+              event.currentTarget.parentElement.remove();
+            }
+            var complete = false;
+            completeButton.onclick = function(event) {
+              if (!complete) {
+                event.currentTarget.src = 'images/checkmark_button.png';
+                event.currentTarget.parentElement.classList.add('complete');
+              } else {
+                event.currentTarget.src = 'images/unchecked_button.png';
+                event.currentTarget.parentElement.classList.add('incomplete');
+              } complete = !complete;
+            }
+
+            // grab the color from the button
+            let buttonColor = event.currentTarget.dataset.mycolor;
+            tempNote.style.backgroundColor = buttonColor;
+
+            // grab the text from the previous sibling of teh button
+            let tempP = document.createElement('p');
+            tempP.innerHTML = noteText;
+            tempNote.appendChild(tempP);
+
+            // put the note into the corkboard
+            document.querySelector('#corkboard').appendChild( tempNote );
+          }
+        }
+
+      }
+
+      // listen for when the filter drop down changes
+      document.querySelector('#filter').onchange = function(event) {
+        // grab the currently selected filter value
+        let currentValue = event.currentTarget.value;
+        let everything = document.querySelectorAll('.note');
+        let deleteButtons = document.querySelectorAll('.delete');
+
+        if (currentValue != 'all') {
+          // hide EVERYTHING
+          for (let i = 0; i < everything.length; i++) {
+            everything[i].classList.add('hidden');
+          }
+
+          /*if (currentValue != 'all') {
+            for (var i = 0; i < deleteButtons.length; i++) {
+              deleteButtons[i].classList.remove('hidden');
+            }
+          } else {
+            for (var i = 0; i < deleteButtons.length; i++) {
+              if (!deleteButtons[i].classList.contains('hidden')) {
+                deleteButtons[i].classList.add('hidden');
+              }
+            }
+          }*/
+
+          // grab a ref to all elements of this class
+          let allNotesOfThisClass = document.querySelectorAll( "." + currentValue );
+
+          // SHOW all elements of the correct class
+          for (let i = 0; i < allNotesOfThisClass.length; i++) {
+            allNotesOfThisClass[i].classList.remove('hidden');
+          }
+          // console.log(allNotesOfThisClass);
+          for (var i = 0; i < deleteButtons.length; i++) {
+            deleteButtons[i].onclick = function() {
+              console.log('clicked delete');
+              for (var i = 0; i < everything.length; i++) {
+                if (everything[i].classList.contains(currentValue)) {
+                  everything[i].remove();
+                }
+              }
+            }
+          }
+
+        } else {
+
+          for (var i = 0; i < everything.length; i++) {
+            if (everything[i].classList.contains('hidden')) {
+              everything[i].classList.remove('hidden');
+            }
+          }
+
+          for (var i = 0; i < deleteButtons.length; i++) {
+            deleteButtons[i].onclick = function() {
+              // console.log('clicked delete');
+              for (var i = 0; i < everything.length; i++) {
+                everything[i].remove();
+              }
+            }
+          }
+
+        }
+      }
+
+    </script>
+
+
+  </body>
+
+</html>
